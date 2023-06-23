@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -26,7 +25,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-DOMAIN_NAME = 'http://localhost:8000'
+DOMAIN_NAME = 'http://127.0.0.1:8000'
 
 # Application definition
 
@@ -38,14 +37,18 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
+    'django.contrib.humanize',
 
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.github',
+    'debug_toolbar',
 
     'products',
+    'orders',
     'users',
+
 ]
 
 MIDDLEWARE = [
@@ -56,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'store.urls'
@@ -79,13 +83,38 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'store.wsgi.application'
 
+INTERNAL_IPS = [
+    '127.0.0.1',
+    'localhost',
+]
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'store_db',
+        'USER': 'store_username',
+        'PASSWORD': 'store_password',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
@@ -122,6 +151,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATICFILES_DIRS = (
     BASE_DIR / 'static',
 )
@@ -142,11 +172,18 @@ LOGOUT_REDIRECT_URL = '/'
 
 # Sending emails
 
-EMAIL_HOST = 'smtp.yandex.com'
-EMAIL_PORT = 465
-EMAIL_HOST_USER = 'storeproject@yandex.ru'
-EMAIL_HOST_PASSWORD = 'Storeproject1981'
-EMAIL_USE_SSL = True
+# EMAIL_HOST = 'smtp.yandex.com'
+# EMAIL_PORT = 465
+# EMAIL_HOST_USER = 'storeproject@yandex.ru'
+# EMAIL_HOST_PASSWORD = 'Storeproject1981'
+# EMAIL_USE_SSL = True
+
+EMAIL_HOST = 'smtp.mailgun.org'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'postmaster@sandboxdfc255279ab74708893ba7457ea365b2.mailgun.org'
+EMAIL_HOST_PASSWORD = 'e48515d180d0952e720211985506acd7-5d9bd83c-f5948e79'
+DEFAULT_FROM_EMAIL = 'storeproject@yandex.ru'
+# # EMAIL_USE_SSL = True
 
 
 # EMAIL_HOST = 'smtp.gmail.com'
@@ -156,7 +193,7 @@ EMAIL_USE_SSL = True
 # EMAIL_USE_TLS = True
 # EMAIL_USE_SSL = False
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 # OAuth
 
@@ -174,3 +211,14 @@ SOCIALACCOUNT_PROVIDERS = {
         ],
     }
 }
+
+# Celery
+
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379'
+CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379'
+
+# Stripe
+
+STRIPE_PUBLIC_KEY = 'pk_test_51NKkx6I1qQAxUkEJMOMfSf3mFaLJ55opTOQcQzJe5anmdeukusrDhzoKB9PAOf6FVWefTdtefGYB5UgEqrWnInsk00Ynh2Y8yd'
+STRIPE_SECRET_KEY = 'sk_test_51NKkx6I1qQAxUkEJhaOGn1nMIZjzqjHoZMZjsJYgvUZOqJ8Td9YqcLimd6GqBfjN7ZbRB2McSlGurz3ArmKbCuBj00406FQztY'
+STRIPE_WEBHOOK_SECRET = 'whsec_e1a422d0def3c01a1508b27b676ecc39034af02b514cfe35702e014a0edecf34'
